@@ -1248,9 +1248,9 @@ __GLOBAL_INI_END:
 ;
 ;flash uint8_t shift[4] = { 0xFE, 0xFD, 0xFB, 0xF7 };
 ;flash unsigned char layout[16] = { '7', '8', '9', '/',
-;                                 '4', '5', '6', '*',
-;                                 '1', '2', '3', '-',
-;                                 'C', '0', '=', '+' };
+;                                   '4', '5', '6', '*',
+;                                   '1', '2', '3', '-',
+;                                   'C', '0', '=', '+' };
 ;unsigned char keypad(void);
 ;
 ;void main(void)
@@ -1260,48 +1260,49 @@ __GLOBAL_INI_END:
 _main:
 ; .FSTART _main
 ; 0000 0024     unsigned char pressed_button;
-; 0000 0025     DDRD = 0x0F;
+; 0000 0025 
+; 0000 0026     DDRD = 0x0F;
 ;	pressed_button -> R17
 	LDI  R30,LOW(15)
 	OUT  0x11,R30
-; 0000 0026     PORTD = 0xF0;
+; 0000 0027     PORTD = 0xF0;
 	LDI  R30,LOW(240)
 	OUT  0x12,R30
-; 0000 0027 
-; 0000 0028     lcd_init(16);
+; 0000 0028 
+; 0000 0029     lcd_init(16);
 	LDI  R26,LOW(16)
 	RCALL _lcd_init
-; 0000 0029 
-; 0000 002A     while (1)
+; 0000 002A 
+; 0000 002B     while (1)
 _0x3:
-; 0000 002B           {
-; 0000 002C             pressed_button = keypad();
+; 0000 002C           {
+; 0000 002D             pressed_button = keypad();
 	RCALL _keypad
 	MOV  R17,R30
-; 0000 002D             if (pressed_button == 'C')
+; 0000 002E             if (pressed_button == 'C')
 	CPI  R17,67
 	BRNE _0x6
-; 0000 002E                 lcd_clear();
+; 0000 002F                 lcd_clear();
 	RCALL _lcd_clear
-; 0000 002F             else
+; 0000 0030             else
 	RJMP _0x7
 _0x6:
-; 0000 0030                 lcd_putchar(pressed_button);
+; 0000 0031                 lcd_putchar(pressed_button);
 	MOV  R26,R17
 	RCALL _lcd_putchar
-; 0000 0031           }
+; 0000 0032           }
 _0x7:
 	RJMP _0x3
-; 0000 0032 }
+; 0000 0033 }
 _0x8:
 	RJMP _0x8
 ; .FEND
 ;unsigned char keypad(void)
-; 0000 0034 {
+; 0000 0035 {
 _keypad:
 ; .FSTART _keypad
-; 0000 0035     int row = 0, column = -1, position = 0;
-; 0000 0036     while (1)
+; 0000 0036     int row = 0, column = -1, position = 0;
+; 0000 0037     while (1)
 	CALL __SAVELOCR6
 ;	row -> R16,R17
 ;	column -> R18,R19
@@ -1310,100 +1311,96 @@ _keypad:
 	__GETWRN 18,19,-1
 	__GETWRN 20,21,0
 _0x9:
-; 0000 0037     {
-; 0000 0038         for (row = 0; row < 4; ++row)
+; 0000 0038     {
+; 0000 0039         for (row = 0; row < 4; ++row)
 	__GETWRN 16,17,0
 _0xD:
 	__CPWRN 16,17,4
 	BRGE _0xE
-; 0000 0039         {
-; 0000 003A             PORTD = shift[row];
+; 0000 003A         {
+; 0000 003B             PORTD = shift[row];
 	MOVW R30,R16
 	SUBI R30,LOW(-_shift*2)
 	SBCI R31,HIGH(-_shift*2)
 	LPM  R0,Z
 	OUT  0x12,R0
-; 0000 003B             if (C0 == 0)
+; 0000 003C             if (C0 == 0)
 	SBIC 0x10,4
 	RJMP _0xF
-; 0000 003C                 column = 0;
+; 0000 003D                 column = 0;
 	__GETWRN 18,19,0
-; 0000 003D             if (C1 == 0)
+; 0000 003E             if (C1 == 0)
 _0xF:
 	SBIC 0x10,5
 	RJMP _0x10
-; 0000 003E                 column = 1;
+; 0000 003F                 column = 1;
 	__GETWRN 18,19,1
-; 0000 003F             if (C2 == 0)
+; 0000 0040             if (C2 == 0)
 _0x10:
 	SBIC 0x10,6
 	RJMP _0x11
-; 0000 0040                 column = 2;
+; 0000 0041                 column = 2;
 	__GETWRN 18,19,2
-; 0000 0041             if (C3 == 0)
+; 0000 0042             if (C3 == 0)
 _0x11:
 	SBIC 0x10,7
 	RJMP _0x12
-; 0000 0042                 column = 3;
+; 0000 0043                 column = 3;
 	__GETWRN 18,19,3
-; 0000 0043             if (column != -1)
+; 0000 0044             if (column != -1)
 _0x12:
 	LDI  R30,LOW(65535)
 	LDI  R31,HIGH(65535)
 	CP   R30,R18
 	CPC  R31,R19
 	BREQ _0x13
-; 0000 0044             {
-; 0000 0045                 position = (row * 4) + column;
+; 0000 0045             {
+; 0000 0046                 position = (row * 4) + column;
 	MOVW R30,R16
 	CALL __LSLW2
 	ADD  R30,R18
 	ADC  R31,R19
 	MOVW R20,R30
-; 0000 0046                 lcd_putchar(layout[position]);
-	SUBI R30,LOW(-_layout*2)
-	SBCI R31,HIGH(-_layout*2)
-	LPM  R26,Z
-	RCALL _lcd_putchar
-; 0000 0047                 column = -1;
+; 0000 0047 
+; 0000 0048                 column = -1;
 	__GETWRN 18,19,-1
-; 0000 0048 
-; 0000 0049                 while (C0 == 0);
+; 0000 0049 
+; 0000 004A                 while (C0 == 0);
 _0x14:
 	SBIS 0x10,4
 	RJMP _0x14
-; 0000 004A                 while (C1 == 0);
+; 0000 004B                 while (C1 == 0);
 _0x17:
 	SBIS 0x10,5
 	RJMP _0x17
-; 0000 004B                 while (C2 == 0);
+; 0000 004C                 while (C2 == 0);
 _0x1A:
 	SBIS 0x10,6
 	RJMP _0x1A
-; 0000 004C                 while (C3 == 0);
+; 0000 004D                 while (C3 == 0);
 _0x1D:
 	SBIS 0x10,7
 	RJMP _0x1D
-; 0000 004D 
-; 0000 004E                 return layout[position];
+; 0000 004E 
+; 0000 004F                 return layout[position];
 	MOVW R30,R20
 	SUBI R30,LOW(-_layout*2)
 	SBCI R31,HIGH(-_layout*2)
 	LPM  R30,Z
 	RJMP _0x2020002
-; 0000 004F             }
-; 0000 0050             delay_ms(50);
+; 0000 0050             }
+; 0000 0051             delay_ms(50);
 _0x13:
 	LDI  R26,LOW(50)
 	LDI  R27,0
 	CALL _delay_ms
-; 0000 0051         }
+; 0000 0052         }
 	__ADDWRN 16,17,1
 	RJMP _0xD
 _0xE:
-; 0000 0052     }
+; 0000 0053     }
 	RJMP _0x9
-; 0000 0053 }
+; 0000 0054 }
 _0x2020002:
 	CALL __LOADLOCR6
 	ADIW R28,6

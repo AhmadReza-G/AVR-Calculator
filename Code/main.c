@@ -34,6 +34,7 @@ unsigned char keypad(void);
 void main(void)
 {
     unsigned char pressed_button;
+
     DDRD = 0x0F;
     PORTD = 0xF0;
 
@@ -67,7 +68,7 @@ unsigned char keypad(void)
             if (column != -1)
             {
                 position = (row * 4) + column;
-                lcd_putchar(layout[position]);
+
                 column = -1;
 
                 while (C0 == 0);
