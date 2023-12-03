@@ -1118,6 +1118,12 @@ __START_OF_CODE:
 	JMP  0x00
 	JMP  0x00
 
+_shift:
+	.DB  0xFE,0xFD,0xFB,0xF7
+_layout:
+	.DB  0x37,0x38,0x39,0x2F,0x34,0x35,0x36,0x2A
+	.DB  0x31,0x32,0x33,0x2D,0x43,0x30,0x3D,0x2B
+
 _0x2000003:
 	.DB  0x80,0xC0
 
@@ -1205,8 +1211,8 @@ __GLOBAL_INI_END:
 	.CSEG
 ;/*******************************************************
 ;Project : AVR-Calculator
-;Version : 1.0
-;Date    : 12/1/2023
+;Version : 1.1
+;Date    : 12/3/2023
 ;Author  : AhmadReza G
 ;Comments: This is a small calculator using (4x4) Keypad and LCD interfacing with AVR (ATmega16) Microcontroller.
 ;
@@ -1232,34 +1238,176 @@ __GLOBAL_INI_END:
 	.SET power_ctrl_reg=mcucr
 	#endif
 ;#include <alcd.h>
+;#include <delay.h>
+;#include <stdint.h>
+;
+;#define C0 PIND.4
+;#define C1 PIND.5
+;#define C2 PIND.6
+;#define C3 PIND.7
+;
+;flash uint8_t shift[4] = { 0xFE, 0xFD, 0xFB, 0xF7 };
+;flash unsigned char layout[16] = { '7', '8', '9', '/',
+;                                 '4', '5', '6', '*',
+;                                 '1', '2', '3', '-',
+;                                 'C', '0', '=', '+' };
+;unsigned char keypad(void);
 ;
 ;void main(void)
-; 0000 0015 {
+; 0000 0023 {
 
 	.CSEG
 _main:
 ; .FSTART _main
-; 0000 0016     DDRD = 0x0F;
+; 0000 0024     unsigned char pressed_button;
+; 0000 0025     DDRD = 0x0F;
+;	pressed_button -> R17
 	LDI  R30,LOW(15)
 	OUT  0x11,R30
-; 0000 0017     PORTD = 0xF0;
+; 0000 0026     PORTD = 0xF0;
 	LDI  R30,LOW(240)
 	OUT  0x12,R30
-; 0000 0018 
-; 0000 0019     lcd_init(16);
+; 0000 0027 
+; 0000 0028     lcd_init(16);
 	LDI  R26,LOW(16)
 	RCALL _lcd_init
-; 0000 001A 
-; 0000 001B     while (1)
+; 0000 0029 
+; 0000 002A     while (1)
 _0x3:
-; 0000 001C           {
-; 0000 001D             // Place your code here
-; 0000 001E 
-; 0000 001F           }
-	RJMP _0x3
-; 0000 0020 }
+; 0000 002B           {
+; 0000 002C             pressed_button = keypad();
+	RCALL _keypad
+	MOV  R17,R30
+; 0000 002D             if (pressed_button == 'C')
+	CPI  R17,67
+	BRNE _0x6
+; 0000 002E                 lcd_clear();
+	RCALL _lcd_clear
+; 0000 002F             else
+	RJMP _0x7
 _0x6:
-	RJMP _0x6
+; 0000 0030                 lcd_putchar(pressed_button);
+	MOV  R26,R17
+	RCALL _lcd_putchar
+; 0000 0031           }
+_0x7:
+	RJMP _0x3
+; 0000 0032 }
+_0x8:
+	RJMP _0x8
+; .FEND
+;unsigned char keypad(void)
+; 0000 0034 {
+_keypad:
+; .FSTART _keypad
+; 0000 0035     int row = 0, column = -1, position = 0;
+; 0000 0036     while (1)
+	CALL __SAVELOCR6
+;	row -> R16,R17
+;	column -> R18,R19
+;	position -> R20,R21
+	__GETWRN 16,17,0
+	__GETWRN 18,19,-1
+	__GETWRN 20,21,0
+_0x9:
+; 0000 0037     {
+; 0000 0038         for (row = 0; row < 4; ++row)
+	__GETWRN 16,17,0
+_0xD:
+	__CPWRN 16,17,4
+	BRGE _0xE
+; 0000 0039         {
+; 0000 003A             PORTD = shift[row];
+	MOVW R30,R16
+	SUBI R30,LOW(-_shift*2)
+	SBCI R31,HIGH(-_shift*2)
+	LPM  R0,Z
+	OUT  0x12,R0
+; 0000 003B             if (C0 == 0)
+	SBIC 0x10,4
+	RJMP _0xF
+; 0000 003C                 column = 0;
+	__GETWRN 18,19,0
+; 0000 003D             if (C1 == 0)
+_0xF:
+	SBIC 0x10,5
+	RJMP _0x10
+; 0000 003E                 column = 1;
+	__GETWRN 18,19,1
+; 0000 003F             if (C2 == 0)
+_0x10:
+	SBIC 0x10,6
+	RJMP _0x11
+; 0000 0040                 column = 2;
+	__GETWRN 18,19,2
+; 0000 0041             if (C3 == 0)
+_0x11:
+	SBIC 0x10,7
+	RJMP _0x12
+; 0000 0042                 column = 3;
+	__GETWRN 18,19,3
+; 0000 0043             if (column != -1)
+_0x12:
+	LDI  R30,LOW(65535)
+	LDI  R31,HIGH(65535)
+	CP   R30,R18
+	CPC  R31,R19
+	BREQ _0x13
+; 0000 0044             {
+; 0000 0045                 position = (row * 4) + column;
+	MOVW R30,R16
+	CALL __LSLW2
+	ADD  R30,R18
+	ADC  R31,R19
+	MOVW R20,R30
+; 0000 0046                 lcd_putchar(layout[position]);
+	SUBI R30,LOW(-_layout*2)
+	SBCI R31,HIGH(-_layout*2)
+	LPM  R26,Z
+	RCALL _lcd_putchar
+; 0000 0047                 column = -1;
+	__GETWRN 18,19,-1
+; 0000 0048 
+; 0000 0049                 while (C0 == 0);
+_0x14:
+	SBIS 0x10,4
+	RJMP _0x14
+; 0000 004A                 while (C1 == 0);
+_0x17:
+	SBIS 0x10,5
+	RJMP _0x17
+; 0000 004B                 while (C2 == 0);
+_0x1A:
+	SBIS 0x10,6
+	RJMP _0x1A
+; 0000 004C                 while (C3 == 0);
+_0x1D:
+	SBIS 0x10,7
+	RJMP _0x1D
+; 0000 004D 
+; 0000 004E                 return layout[position];
+	MOVW R30,R20
+	SUBI R30,LOW(-_layout*2)
+	SBCI R31,HIGH(-_layout*2)
+	LPM  R30,Z
+	RJMP _0x2020002
+; 0000 004F             }
+; 0000 0050             delay_ms(50);
+_0x13:
+	LDI  R26,LOW(50)
+	LDI  R27,0
+	CALL _delay_ms
+; 0000 0051         }
+	__ADDWRN 16,17,1
+	RJMP _0xD
+_0xE:
+; 0000 0052     }
+	RJMP _0x9
+; 0000 0053 }
+_0x2020002:
+	CALL __LOADLOCR6
+	ADIW R28,6
+	RET
 ; .FEND
 	#ifndef __SLEEP_DEFINED__
 	#define __SLEEP_DEFINED__
@@ -1306,6 +1454,22 @@ __lcd_write_data:
 	__DELAY_USB 17
 	RJMP _0x2020001
 ; .FEND
+_lcd_gotoxy:
+; .FSTART _lcd_gotoxy
+	ST   -Y,R26
+	LD   R30,Y
+	LDI  R31,0
+	SUBI R30,LOW(-__base_y_G100)
+	SBCI R31,HIGH(-__base_y_G100)
+	LD   R30,Z
+	LDD  R26,Y+1
+	ADD  R26,R30
+	RCALL __lcd_write_data
+	LDD  R5,Y+1
+	LDD  R4,Y+0
+	ADIW R28,2
+	RET
+; .FEND
 _lcd_clear:
 ; .FSTART _lcd_clear
 	LDI  R26,LOW(2)
@@ -1318,6 +1482,31 @@ _lcd_clear:
 	MOV  R4,R30
 	MOV  R5,R30
 	RET
+; .FEND
+_lcd_putchar:
+; .FSTART _lcd_putchar
+	ST   -Y,R26
+	LD   R26,Y
+	CPI  R26,LOW(0xA)
+	BREQ _0x2000005
+	CP   R5,R7
+	BRLO _0x2000004
+_0x2000005:
+	LDI  R30,LOW(0)
+	ST   -Y,R30
+	INC  R4
+	MOV  R26,R4
+	RCALL _lcd_gotoxy
+	LD   R26,Y
+	CPI  R26,LOW(0xA)
+	BREQ _0x2020001
+_0x2000004:
+	INC  R5
+	SBI  0x1B,0
+	LD   R26,Y
+	RCALL __lcd_write_data
+	CBI  0x1B,0
+	RJMP _0x2020001
 ; .FEND
 _lcd_init:
 ; .FSTART _lcd_init
@@ -1392,6 +1581,39 @@ __delay_ms0:
 	brne __delay_ms0
 __delay_ms1:
 	ret
+
+__LSLW2:
+	LSL  R30
+	ROL  R31
+	LSL  R30
+	ROL  R31
+	RET
+
+__SAVELOCR6:
+	ST   -Y,R21
+__SAVELOCR5:
+	ST   -Y,R20
+__SAVELOCR4:
+	ST   -Y,R19
+__SAVELOCR3:
+	ST   -Y,R18
+__SAVELOCR2:
+	ST   -Y,R17
+	ST   -Y,R16
+	RET
+
+__LOADLOCR6:
+	LDD  R21,Y+5
+__LOADLOCR5:
+	LDD  R20,Y+4
+__LOADLOCR4:
+	LDD  R19,Y+3
+__LOADLOCR3:
+	LDD  R18,Y+2
+__LOADLOCR2:
+	LDD  R17,Y+1
+	LD   R16,Y
+	RET
 
 ;END OF CODE MARKER
 __END_OF_CODE:

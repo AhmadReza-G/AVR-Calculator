@@ -127,8 +127,8 @@ WatchAVR8LAutoVariables=0
 UseEEPROMLocation0=1
 RebuildAll=0
 LinkageInformationPresent=1
-COFFileTimeStamp=1468108214
-Build=2
+COFFileTimeStamp=1468226965
+Build=3
 [DefinedSymbolsDebug]
 Count=0
 [Compiler]
@@ -230,7 +230,7 @@ UseEEPROMLocation0=1
 RebuildAll=1
 LinkageInformationPresent=0
 COFFileTimeStamp=-1
-Build=2
+Build=3
 [DefinedSymbols]
 Count=0
 [CompilerAdvanced]
@@ -329,14 +329,6 @@ PreserveEEPROM=0
 VerifyProgramming=1
 ProgrammingCounter=0
 RunUserProg=0
-[HeadersList]
-Files=1
-F1=C:\Users\ahmad\Desktop\AVR-Calculator\main.c
-[Header1]
-Files=3
-F1=C:\cvavr\inc\mega16.h
-F2=C:\cvavr\inc\mega16_bits.h
-F3=C:\cvavr\inc\alcd.h
 [BuildInfoCompiler]
 L1=Build configuration: Debug
 L2=Chip: ATmega16
@@ -354,8 +346,8 @@ L13=Enhanced function parameters passing: Yes
 L14=Automatic register allocation: Yes
 L15=Smart register allocation: Yes
 L16=
-L17=Build: 1
-L18=2417 line(s) compiled
+L17=Build: 3
+L18=2524 line(s) compiled
 L19=No errors
 L20=No warnings
 L21=
@@ -363,7 +355,7 @@ L22=Bit variables size: 0 byte(s)
 L23=
 L24=Data Stack area: 0x60 to 0x15F
 L25=Data Stack size: 256 byte(s)
-L26=Estimated Data Stack usage: 3 byte(s)
+L26=Estimated Data Stack usage: 11 byte(s)
 L27=
 L28=RAM Global variables area: 0x160 to 0x163
 L29=RAM Global variables size: 4 byte(s)
@@ -374,19 +366,19 @@ L33=
 L34=Heap size: 0 byte(s)
 L35=
 L36=EEPROM usage: 0 byte(s), 0.0% of EEPROM
-L37=Program size: 205 words (410 bytes), 2.5% of FLASH
-L38=6 words (12 bytes), 2.8% reduced by Code Compression
+L37=Program size: 352 words (704 bytes), 4.3% of FLASH
+L38=6 words (12 bytes), 1.7% reduced by Code Compression
 Lines=38
 [BuildInfoAssembler]
 L1=AVRASM: AVR macro assembler 2.1.30 (build 592 Nov  7 2008 12:38:17)
 L2=Copyright (C) 1995-2008 ATMEL Corporation
 L3=
-L4=C:\Users\ahmad\Desktop\AVR-Calculator\Debug\List\calc.asm(1398): No EEPROM data, deleting C:\Users\ahmad\Desktop\AVR-Calculator\Debug\Exe\calc.eep
+L4=C:\Users\ahmad\Desktop\AVR-Calculator\AVR-Calculator\Code\Debug\List\calc.asm(1620): No EEPROM data, deleting C:\Users\ahmad\Desktop\AVR-Calculator\AVR-Calculator\Code\Debug\Exe\calc.eep
 L5=
 L6=ATmega16 memory use summary [bytes]:
 L7=Segment   Begin    End      Code   Data   Used    Size   Use%
 L8=---------------------------------------------------------------
-L9=[.cseg] 0x000000 0x00019a    400     10    410   16384   2.5%
+L9=[.cseg] 0x000000 0x0002c0    674     30    704   16384   4.3%
 L10=[.dseg] 0x000060 0x000164      0      4      4    1024   0.4%
 L11=[.eseg] 0x000000 0x000000      0      0      0     512   0.0%
 L12=
@@ -437,3 +429,13 @@ BK8=-1
 BK9=-1
 [FoldedCode2]
 Blocks=0
+[HeadersList]
+Files=1
+F1=C:\Users\ahmad\Desktop\AVR-Calculator\AVR-Calculator\Code\main.c
+[Header1]
+Files=5
+F1=C:\cvavr\inc\mega16.h
+F2=C:\cvavr\inc\mega16_bits.h
+F3=C:\cvavr\inc\alcd.h
+F4=C:\cvavr\inc\delay.h
+F5=C:\cvavr\inc\stdint.h
